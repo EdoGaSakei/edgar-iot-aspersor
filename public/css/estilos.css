@@ -1,0 +1,127 @@
+
+  :root {
+    --color-primario: #7ff9d9b3;
+    --color-hover: #4646462c;
+    --color-secundario: darkblue;
+    --color-componente: black;
+    --color-ext: white;
+    --color-sombra: #b6b6b6;
+    --altura-etiqueta: 0.7rem;
+    font-family: sans-serif
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+  }
+
+  header {
+    display: flex;
+    position: sticky;
+    z-index: 2;
+    top: 0;
+    background-color: var(--color-primario);
+  }
+
+  h1 {
+    margin: 0;
+    padding: 0.5rem 0 0.5rem 0.5rem;
+    font-size: 1.2rem;
+    margin-right: auto;
+  }
+
+
+  button:hover {
+    background-color: var(--color-hover)
+  }
+
+  input, meter{
+    width: 100%;
+    padding: 2px 0;
+    border: none;
+    border-bottom: 1px solid var(--color-componente);
+  }
+
+  input:focus,
+  meter:focus{
+    outline: none;
+    border-bottom-color: var(--color-secundario);
+  }
+
+  p {
+    margin: 1rem;
+  }
+
+  p.campo.flotante {
+    position: relative;
+    z-index: 1;
+    padding-top: var(--altura-etiqueta);
+  }
+
+  p.campo.flotante label {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    font-size: var(--altura-etiqueta);
+    color: var(--color-componente);
+  }
+
+  p.campo.flotante label {
+    top: calc(var(--altura-etiqueta) - 0.2em);
+    font-size: 1rem;
+    transition: 0.7s ease-out;
+    padding: 0;
+  }
+
+  p.campo.flotante :focus+label,
+  p.campo.flotante :valid+label {
+    top: 0;
+    font-size: var(--altura-etiqueta);
+  }
+
+  button {
+    border: solid 0.5px;
+    padding: 0.5rem;
+    cursor: default;
+    background-color: var(--color-sombra);
+  }
+
+  button:active {
+    background-color: var(--color-hover);
+  }
+
+  header .ext ul {
+    display: none;
+    position: fixed;
+    overflow: auto;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    top: 2.5rem;
+    right: 1rem;
+    background-color: var(--color-ext);
+    box-shadow: -1px 5px 7px 0px var(--color-sombra);
+  }
+
+  header .ext ul.muestra {
+    display: block;
+    position: fixed;
+  }
+
+  header li:hover {
+    background-color: var(--color-hover);
+  }
+
+  header li button {
+    display: block;
+    width: 100%;
+  }
+  
+   #lista >ol {
+    position: relative;
+    left: -4.5rem;
+  }

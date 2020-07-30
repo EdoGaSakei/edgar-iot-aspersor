@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Llamadas a las librerias JS de jQuery, jQuery Mobile y a su hoja de estilos CSS -->
+  	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.css" />
+    <title>Internet de las cosas</title>
+    <script>
+      registraServiceWorker();
+      async function registraServiceWorker() {
+        if ("serviceWorker" in navigator) {
+          try {
+            const registro = await navigator.serviceWorker.register("sw.js");
+            console.log("Service Worker registrado.");
+            console.log(registro);
+          } catch (e) {
+            muestraError(e);
+          }
+        }
+      }
+      function muestraError(e) {
+        console.log(e);
+        alert(e.message);
+      }
+    </script>
+    <!-- Ícono para la página web. Debe ponerse en la raíz de la página. -->
+    <link rel="icon" sizes="32x32" href="favicon.ico">
+    <!-- Color de la barra de navegación de Chrome en dispositivos móviles. -->
+    <meta name="theme-color" content="#ffcb2d">
+    <!-- Configuración de la PWA: Chrome y Edge. -->
+    <link rel="manifest" href="manifest.json">
+    <!-- Configuración para Web Clip en Safari. -->
+    <meta name="apple-mobile-web-app-title" content="Ejemplo de PWA para internet de las cosas">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="img/icono-2048.png">
+    <link rel="apple-touch-icon" sizes="256x256" href="img/icono-256.png">
+    <link rel="apple-touch-icon" sizes="1024x1024" href="img/icono-1024.png">
+    <link rel="apple-touch-icon" sizes="2048x2048" href="img/icono-2048.png">
+    <script type="module" src="cmp/mi-footer.js"></script>
+    <link rel="stylesheet" href="css/estilos.css">
+    <!-- Carga el núcleo de Firebase. Actualiza los números de versión cuando
+    sea necesario. Hemos quitado el atributo defer que aparecía originalmente.
+    -->
+    <script src="/__/firebase/7.17.1/firebase-app.js"></script>
+    <!-- Solo incluye las características de Firebase que necesites.s -->
+    <script src="/__/firebase/7.17.1/firebase-auth.js"></script>
+    <script src="/__/firebase/7.17.1/firebase-firestore.js"></script>
+    <script src="/__/firebase/7.17.1/firebase-storage.js"></script>
+    <!-- Carga la configuración de tu proyecto en el servidor de Firebase. -->
+    <script src="/__/firebase/init.js"></script>
+    <script>
+      const firestore = firebase.firestore();
+      const ID_PROYECTO = "edgar-iot-aspersor";
+      const ENTIDAD_AGUA = "AGUA";
+      const ENTIDAD_HUMEDAD = "HUMEDAD";
+      const ID = "idIoT";
+      const URL_AGUA = `https://firestore.googleapis.com/v1/projects/${
+        ID_PROYECTO}/databases/(default)/documents/${ENTIDAD_AGUA}/${ID}`;
+      const URL_HUMEDAD = `https://firestore.googleapis.com/v1/projects/${
+        ID_PROYECTO}/databases/(default)/documents/${ENTIDAD_HUMEDAD}/${
+        ID}`;
+      const URL_AGREGA = `https://firestore.googleapis.com/v1/projects/${
+        ID_PROYECTO}/databases/(default)/documents/${ENTIDAD_HUMEDAD}/${
+        ID}/LECTURAS`;
+      const INTERVALO_EN_MILIS = 1000;
+      const MÉTODO_AGREGA = "POST";
+      const MÉTODO_CAMBIOS = "PATCH";
+      const HEADERS_JSON = {
+        "Content-Type": "application/json"
+      };
+      function procesaError(e) {
+        console.log(e);
+        alert(e.message);
+      }
+    </script>
+    <!-- Comienzo del contenido que estarar en la pagina web -->
+    </head>
+    <body>
+      <header>
+        <h1>Aspersor</h1></br>
+      </header>
+      <section id=iot>
+        <p>
+          <label for="slider-fill">
+            Humedad
+            <input type="range" id=iotTemperautra name="slider-fill" class="slider-fill" value="5" min="0" max="10" data-highlight="true"
+            onchange="intensidadModificada();">
+          </label>
+        </p>
+        <p><label><output id=iotRegando></output></label></p>
+        <p><output id=iotError></output></p>
+      </section>
+      <script>
+        setInterval(actualizaIot, INTERVALO_EN_MILIS);
+        iniciaIntensidad();
+        async function actualizaIot() {
+          try {
+            const resp = await fetch(URL_AGUA);
+            if (resp.ok) {
+              const json = await resp.json();
+              iotRegando.value = json.fields.valor && json.fields.valor.booleanValue ?
+                "Regando" : "No regando";
+            } else {
+              iotRegando.value = "No regando";
+              console.log(resp.statusText);
+            }
+          } catch (e) {
+            console.log(e);
+            iotError.value = e.message;
+          }
+        }
+        async function iniciaIntensidad() {
+          try {
+            const resp = await fetch(URL_HUMEDAD);
+            if (resp.ok) {
+              const json = await resp.json();
+              iotTemperautra.value =
+                json.fields.valor && json.fields.valor.integerValue ?
+                  json.fields.valor.integerValue : 0;
+            } else {
+              iotTemperautra.value = 0;
+              console.log(resp.statusText);
+            }
+          } catch (e) {
+            console.log(e);
+            iotError.value = e.message;
+          }
+        }
+        async function intensidadModificada() {
+          try {
+            var data = {
+              fields: { valor: { integerValue: iotTemperautra.value } }
+            };
+            const resp = await fetch(URL_HUMEDAD, {
+              method: MÉTODO_CAMBIOS,
+              body: JSON.stringify(data),
+              headers: HEADERS_JSON,
+            });
+            if (!resp.ok) {
+              throw new Error(resp.message);
+            }
+            const resp2 = await fetch(URL_AGREGA, {
+              method: MÉTODO_AGREGA,
+              body: JSON.stringify(data),
+              headers: HEADERS_JSON,
+            });
+            if (!resp2.ok) {
+              throw new Error(resp2.message);
+            }
+          } catch (e) {
+            console.log(e);
+            iotError.value = e.message;
+          }
+        }
+      </script>
+      <section id=mp>
+        <p>
+          <label>
+            Flujo de agua
+          <meter id=mpRegando class="slider-fill" min="0" max="10"></meter>
+          </label>
+        </p>
+        <p>
+            <input hidden id="mpAgua" type="checkbox" value="Fin Rot" onclick="AguaModificada();">
+            <button onclick="document.getElementById('mpAgua').checked=!document.getElementById('mpAgua').checked;AguaModificada();"">
+            Aspersor
+            </button>
+        </p>
+      </section>
+      <script>
+        actualizaMp();
+        async function actualizaMp() {
+          firestore.collection(ENTIDAD_HUMEDAD).doc(ID).onSnapshot(
+            doc => {
+              if (doc.exists) {
+                mpRegando.value = 10 - doc.data().valor || 0;
+              } else {
+                mpRegando.value = 0;
+              }
+            },
+            e => {
+              procesaError(e);
+              // muestraLuz();
+            }
+          );
+          const docAgua = await firestore.collection(ENTIDAD_AGUA).doc(ID).get();
+          mpAgua.checked = docAgua.exists && Boolean(docAgua.data().valor);
+        }
+        async function AguaModificada() {
+          try {
+            await firestore.collection(ENTIDAD_AGUA).doc(ID).set({
+              valor: mpAgua.checked
+            });
+          } catch (e) {
+            procesaError(e);
+          }
+        }
+      </script>
+      <mi-footer></mi-footer>
+    </body>
+  </html>
